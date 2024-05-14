@@ -1,0 +1,48 @@
+# Importation des bibliothèques nécessaires
+from sklearn.datasets import load_digits
+from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Charger le jeu de données digits
+digits = load_digits()
+
+# Diviser les données en ensembles d'apprentissage et de test
+X_train, X_test, y_train, y_test = train_test_split(digits.data, digits.target, test_size=0.2, random_state=42)
+
+# Entraîner le classificateur SVM
+svm_classifier = SVC(kernel='linear')
+svm_classifier.fit(X_train, y_train)
+
+# Entraîner le classificateur KNN
+knn_classifier = KNeighborsClassifier(n_neighbors=3)
+knn_classifier.fit(X_train, y_train)
+
+# Faire des prédictions avec le classificateur SVM
+svm_predictions = svm_classifier.predict(X_test)
+
+# Faire des prédictions avec le classificateur KNN
+knn_predictions = knn_classifier.predict(X_test)
+
+# Calculer la précision des deux modèles
+svm_accuracy = accuracy_score(y_test, svm_predictions)
+knn_accuracy = accuracy_score(y_test, knn_predictions)
+
+print("Précision du modèle SVM :", svm_accuracy)
+print("Précision du modèle KNN :", knn_accuracy)
+
+# Afficher une image et sa prédiction pour le SVM
+index = np.random.randint(0, len(X_test))  # Choix aléatoire d'une image de l'ensemble de test
+plt.gray()
+plt.imshow(X_test[index].reshape(8, 8))  # Affichage de l'image
+plt.title(f"Image de chiffre : SVM Prédiction = {svm_predictions[index]}")
+plt.show()
+
+# Afficher une image et sa prédiction pour le KNN
+plt.gray()
+plt.imshow(X_test[index].reshape(8, 8))  # Affichage de l'image
+plt.title(f"Image de chiffre : KNN Prédiction = {knn_predictions[index]}")
+plt.show()
