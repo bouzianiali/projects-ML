@@ -1,0 +1,74 @@
+from tkinter import *
+from tkinter import filedialog
+from PIL import Image, ImageTk
+
+def afficher_image():
+    global img, img_tk, img_label, img_modifiee_label
+    chemin_image = filedialog.askopenfilename(title="Sélectionner une image", filetypes=[("Images", "*.jpg *.png")])
+    if chemin_image:
+        img = Image.open(chemin_image)
+        img_tk = ImageTk.PhotoImage(img)
+        img_label.config(image=img_tk)
+        img_label.image = img_tk
+        img_modifiee_label.config(image=None)  # Effacer l'image modifiée lors du chargement d'une nouvelle image
+
+def modifier_couleur(event=None):
+    global img_modifiee, img_modifiee_tk, img_modifiee_label
+    if 'img' in globals():
+        rouge = rouge_scale.get()
+        vert = vert_scale.get()
+        bleu = bleu_scale.get()
+        img_modifiee = img.copy()
+        pixels = img_modifiee.load()
+        largeur, hauteur = img_modifiee.size
+        for x in range(largeur):
+            for y in range(hauteur):
+                r, g, b = pixels[x, y]
+                pixels[x, y] = int(r * rouge), int(g * vert), int(b * bleu)
+        img_modifiee_tk = ImageTk.PhotoImage(img_modifiee)
+        img_modifiee_label.config(image=img_modifiee_tk)
+        img_modifiee_label.image = img_modifiee_tk
+
+def enregistrer_image():
+    if 'img_modifiee' in globals():
+        nom_fichier = filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png")])
+        if nom_fichier:
+            img_modifiee.save(nom_fichier)
+
+fenetre = Tk()
+fenetre.geometry('800x550')
+fenetre.title('Image modifiable')
+fenetre['bg'] = '#F8E9C8'
+
+bouton_afficher = Button(fenetre, text="Afficher l'image", bg='#33DAFF', fg='black',font=("Helvetica", 12, "bold"), command=afficher_image)
+bouton_afficher.pack(pady=10)
+
+rouge_scale = Scale(fenetre, from_=0, to=2, resolution=0.01, orient=HORIZONTAL, label="Rouge",fg='red',font=("Helvetica", 10, "bold"), length=200)
+rouge_scale.pack(pady=5)
+
+vert_scale = Scale(fenetre, from_=0, to=2, resolution=0.01, orient=HORIZONTAL, label="Vert",font=("Helvetica", 10, "bold"),fg='green' ,length=200)
+vert_scale.pack(pady=5)
+
+bleu_scale = Scale(fenetre, from_=0, to=2, resolution=0.01,font=("Helvetica", 10, "bold"), orient=HORIZONTAL, label="Bleu",fg='blue', length=200)
+bleu_scale.pack(pady=5)
+
+bouton_enregistrer = Button(fenetre, text="Enregistrer l'image", bg='#33DAFF', fg='black',font=("Helvetica", 12, "bold"), command=enregistrer_image)
+bouton_enregistrer.pack(pady=10)
+
+img_frame = Frame(fenetre)
+img_frame.pack(pady=10)
+
+# Label pour afficher l'image originale
+img_label = Label(img_frame)
+img_label.pack(side=LEFT, padx=10)
+
+# Label pour afficher l'image modifiée
+img_modifiee_label = Label(img_frame)
+img_modifiee_label.pack(side=LEFT, padx=10)
+
+# Appeler modifier_couleur à chaque changement d'échelle de couleur
+rouge_scale.bind("<Motion>", modifier_couleur)
+vert_scale.bind("<Motion>", modifier_couleur)
+bleu_scale.bind("<Motion>", modifier_couleur)
+
+fenetre.mainloop()
