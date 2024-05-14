@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import Button, Frame, messagebox
+from tkinter import Button, Frame, Label, messagebox  
+import random
 
 def n_valide(sudoku, y, x, n):
     # On vérifie si le nombre est valide sur sa ligne
@@ -51,10 +52,16 @@ def afficher_sudoku():
             couleur = 'black'  # Couleur par défaut
             if not n_valide(sudoku, i, j, valeur):
                 couleur = 'red'  # Si le nombre n'est pas valide, changer la couleur en rouge
+            cell_entries[i][j].delete(0, tk.END)  # Effacer les anciennes valeurs
+            cell_entries[i][j].insert(0, str(valeur))  # Insérer la nouvelle valeur
             cell_entries[i][j].config(fg=couleur, justify="center")  # Changer la couleur du texte et centrer le texte
 
 def confirmer():
     global sudoku
+    # Vérifier si la grille est vide
+    if all(all(cell_entries[i][j].get() == '' for j in range(9)) for i in range(9)):
+        messagebox.showerror("Validation", "La grille est vide !")
+        return
     for i in range(9):
         for j in range(9):
             val = cell_entries[i][j].get()
@@ -71,22 +78,8 @@ def confirmer():
 
 def charger_exemple():
     global sudoku
-    sudoku = [
-        [5, 3, 4, 6, 7, 8, 9, 1, 2],
-        [6, 7, 2, 1, 9, 5, 3, 4, 8],
-        [1, 9, 8, 3, 4, 2, 5, 6, 7],
-        [8, 5, 9, 7, 6, 1, 4, 2, 3],
-        [4, 2, 6, 8, 5, 3, 7, 9, 1],
-        [7, 1, 3, 9, 2, 4, 8, 5, 6],
-        [9, 6, 1, 5, 3, 7, 2, 8, 4],
-        [2, 8, 7, 4, 1, 9, 6, 3, 5],
-        [3, 4, 5, 2, 8, 6, 1, 7, 9]
-    ]
-
-    for i in range(9):
-        for j in range(9):
-            cell_entries[i][j].delete(0, tk.END)
-            cell_entries[i][j].insert(0, str(sudoku[i][j]))
+    sudoku = [[random.randint(1, 9) for _ in range(9)] for _ in range(9)]
+    afficher_sudoku()  # Afficher le Sudoku après avoir généré un nouvel exemple
 
 # Créer la fenêtre principale
 root = tk.Tk()
@@ -106,6 +99,15 @@ for i in range(9):
             bg_color = 'lightgrey'
         cell_entries[i][j] = tk.Entry(sudoku_frame, width=3, bg=bg_color, font=('Helvetica', 16), bd=2, relief="solid")
         cell_entries[i][j].grid(row=i, column=j)
+
+        # Ajouter des colonnes vides supplémentaires
+        if j % 3 == 2 and j != 8:
+            Label(sudoku_frame, width=1).grid(row=i, column=j+1)
+
+    # Ajouter des lignes vides supplémentaires
+    if i % 3 == 2 and i != 8:
+        for j in range(9):
+            Label(sudoku_frame, height=1).grid(row=i+1, column=j)
 
 # Bouton Confirmer
 confirm_button = Button(root, text='Confirmer', command=confirmer, font=('Helvetica', 14))
