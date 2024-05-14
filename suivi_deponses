@@ -1,0 +1,81 @@
+import tkinter as tk
+import tkinter.messagebox as messagebox
+from tkinter import ttk
+import pandas as pd
+
+def ajouter_depense():
+    date = date_entry.get()
+    montant = montant_entry.get()
+    description = description_entry.get()
+
+    nouvelle_depense = pd.DataFrame({'Date': [date], 'Montant': [float(montant)], 'Description': [description]})
+    global df_depenses
+    df_depenses = pd.concat([df_depenses, nouvelle_depense], ignore_index=True)
+
+    sauvegarder_donnees()
+    afficher_depenses_mensuelles()
+
+    date_entry.delete(0, tk.END)
+    montant_entry.delete(0, tk.END)
+    description_entry.delete(0, tk.END)
+
+def afficher_toutes_depenses():
+    # Afficher toutes les dépenses enregistrées
+    print(df_depenses)
+
+def sauvegarder_donnees():
+    
+    # Sauvegarder le DataFrame dans un fichier CSV
+    df_depenses.to_csv('depenses.csv', index=False)
+
+def afficher_depenses_mensuelles():
+    # Convertir la colonne 'Date' en format de date
+    df_depenses['Date'] = pd.to_datetime(df_depenses['Date'])
+
+    # Ajouter une nouvelle colonne 'Mois' pour extraire le mois et le jour de la date
+    df_depenses['Mois'] = df_depenses['Date'].dt.strftime('%Y-%m')
+
+    # Agréger les dépenses par mois
+    depenses_mensuelles = df_depenses.groupby('Mois')['Montant'].sum()
+
+    # Afficher les dépenses mensuelles dans la console
+    print("Dépenses mensuelles :\n", depenses_mensuelles)
+
+# Charger les données à partir du fichier CSV au démarrage de l'application
+try:
+    df_depenses = pd.read_csv('depenses.csv')
+except FileNotFoundError:
+    df_depenses = pd.DataFrame(columns=['Date', 'Montant', 'Description'])
+
+root = tk.Tk()
+root.title("Suivi des Dépenses")
+root.geometry("270x250")
+root.resizable(False, False)
+
+# Créer et placer les étiquettes et les champs de saisie
+date_label = ttk.Label(root, text="Date (YYYY-MM-DD) :")
+date_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+date_entry = ttk.Entry(root)
+date_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+
+montant_label = ttk.Label(root, text="Montant :")
+montant_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+montant_entry = ttk.Entry(root)
+montant_entry.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
+
+description_label = ttk.Label(root, text="Description :")
+description_label.grid(row=2, column=0, padx=5, pady=5, sticky="w")
+description_entry = ttk.Entry(root)
+description_entry.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
+
+# Créer les boutons
+ajouter_button = ttk.Button(root, text="Ajouter Dépense", command=ajouter_depense)
+ajouter_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky="ew")
+
+afficher_button = ttk.Button(root, text="Afficher Toutes Dépenses", command=afficher_toutes_depenses)
+afficher_button.grid(row=4, column=0, columnspan=2, padx=5, pady=5, sticky="ew")
+
+afficher_depenses_mensuelles_button = ttk.Button(root, text="Afficher Dépenses Mensuelles", command=afficher_depenses_mensuelles)
+afficher_depenses_mensuelles_button.grid(row=5, column=0, columnspan=2, padx=5, pady=5, sticky="ew")
+
+root.mainloop()
